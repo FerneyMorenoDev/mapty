@@ -13,6 +13,7 @@ class Workout {
 
     date = new Date();
     id = (Date.now() + '').slice(-10);
+    clicks = 0;
 
     constructor(coords, duration, distance) {
         this.coords = coords;
@@ -24,6 +25,10 @@ class Workout {
         // prettier-ignore
         const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
         this.titleDescription = `${this.name[0].toUpperCase()}${this.name.slice(1)} on ${months[this.date.getMonth()]} ${this.date.getDate()}`;
+    }
+
+    click() {
+        this.clicks++;
     }
 }
 
@@ -89,7 +94,8 @@ class App {
             .bindPopup('A pretty CSS3 popup.<br> Easily customizable.')
             .openPopup();
     
-            this.#map.on('click', this.showForm.bind(this))
+        this.#map.on('click', this.showForm.bind(this));
+        this.renderMarkersFromLocalStorage();
     }
 
     showForm({ latlng }) {
@@ -185,6 +191,7 @@ class App {
         this.renderMarket(workout);
         this.hideForm.call(event.target);
         this.renderWorkoutList(workout);
+        this.setLocalStorage();
     }
 
     moveToPopUp(event) {
@@ -192,10 +199,33 @@ class App {
         if (!workoutCard) return;
         
         const workout = this.#workouts.find(workout => workout.id === workoutCard.dataset.id);
+    
         this.#map.setView(workout.coords, this.#mapZoomLevel, {
             animate: true,
             duration: 1,
         });
+    }
+
+    setLocalStorage() {
+        localStorage.setItem('workouts', JSON.stringify(this.#workouts));
+    }
+
+    getLocalStorage() {
+        const data = JSON.parse(localStorage.getItem('workouts'));
+        if (!data) return;
+        this.#workouts = data;
+    }
+
+    renderMarkersFromLocalStorage() {
+        this.getLocalStorage();
+        if (this.#workouts && this.#workouts.length > 0) {
+            this.#workouts.forEach(workout => {
+                // let newWork = Object.create(Workout.prototype)
+                // workout.__proto__ = newWork.__proto__;
+                this.renderMarket(workout);
+                this.renderWorkoutList(workout);
+            });
+        }
     }
 }
 

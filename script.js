@@ -70,19 +70,19 @@ class App {
 
     constructor() { 
         this.#getPosition();
-        form.addEventListener('submit', this.newWorkout.bind(this));
-        inputType.addEventListener('change', this.toggleElevationField);
-        containerWorkouts.addEventListener('click', this.moveToPopUp.bind(this));
+        form.addEventListener('submit', this.#newWorkout.bind(this));
+        inputType.addEventListener('change', this.#toggleElevationField);
+        containerWorkouts.addEventListener('click', this.#moveToPopUp.bind(this));
     }
 
     #getPosition() {
         if (navigator.geolocation)
-        navigator.geolocation.getCurrentPosition(this.loadMap.bind(this), () => {
+        navigator.geolocation.getCurrentPosition(this.#loadMap.bind(this), () => {
             alert('Unable to get your current position');
         });
     }
 
-    loadMap(position) {
+    #loadMap(position) {
         const { latitude, longitude } = position.coords;
         this.#map = L.map('map').setView([latitude, longitude], this.#mapZoomLevel);
     
@@ -94,17 +94,17 @@ class App {
             .bindPopup('A pretty CSS3 popup.<br> Easily customizable.')
             .openPopup();
     
-        this.#map.on('click', this.showForm.bind(this));
-        this.renderMarkersFromLocalStorage();
+        this.#map.on('click', this.#showForm.bind(this));
+        this.#renderMarkersFromLocalStorage();
     }
 
-    showForm({ latlng }) {
+    #showForm({ latlng }) {
         this.#mapEvent = latlng;
         form.classList.remove('hidden');
         inputDistance.focus();
     }
 
-    hideForm() {
+    #hideForm() {
         form.style.display = 'none';
         this.classList.add('hidden');
         setTimeout(() => form.style.display = 'grid', 1000);
@@ -115,12 +115,12 @@ class App {
         inputDistance.blur();
     };
 
-    toggleElevationField() {
+    #toggleElevationField() {
         inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
         inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
     }
 
-    renderMarket({ coords, name, titleDescription }) {
+    #renderMarket({ coords, name, titleDescription }) {
         L.marker(coords)
             .addTo(this.#map)
             .bindPopup(
@@ -136,7 +136,7 @@ class App {
             .openPopup();
     }
 
-    renderWorkoutList({ id, duration, distance, cadence, pace, name, speed, elevationGain, titleDescription }) {
+    #renderWorkoutList({ id, duration, distance, cadence, pace, name, speed, elevationGain, titleDescription }) {
         const wotkoutHtml = `<li class="workout workout--${name}" data-id="${id}">
             <h2 class="workout__title">${titleDescription}</h2>
             <div class="workout__details">
@@ -164,7 +164,7 @@ class App {
         form.insertAdjacentHTML('afterend', wotkoutHtml);
     }
 
-    newWorkout(event) {
+    #newWorkout(event) {
         event.preventDefault();
         const { lat, lng } = this.#mapEvent;
         const distance = Number(inputDistance.value)
@@ -188,13 +188,13 @@ class App {
         }
 
         this.#workouts.push(workout);
-        this.renderMarket(workout);
-        this.hideForm.call(event.target);
-        this.renderWorkoutList(workout);
-        this.setLocalStorage();
+        this.#renderMarket(workout);
+        this.#hideForm.call(event.target);
+        this.#renderWorkoutList(workout);
+        this.#setLocalStorage();
     }
 
-    moveToPopUp(event) {
+    #moveToPopUp(event) {
         const workoutCard = event.target.closest('.workout');
         if (!workoutCard) return;
         
@@ -206,24 +206,24 @@ class App {
         });
     }
 
-    setLocalStorage() {
+    #setLocalStorage() {
         localStorage.setItem('workouts', JSON.stringify(this.#workouts));
     }
 
-    getLocalStorage() {
+    #getLocalStorage() {
         const data = JSON.parse(localStorage.getItem('workouts'));
         if (!data) return;
         this.#workouts = data;
     }
 
-    renderMarkersFromLocalStorage() {
-        this.getLocalStorage();
+    #renderMarkersFromLocalStorage() {
+        this.#getLocalStorage();
         if (this.#workouts && this.#workouts.length > 0) {
             this.#workouts.forEach(workout => {
                 // let newWork = Object.create(Workout.prototype)
                 // workout.__proto__ = newWork.__proto__;
-                this.renderMarket(workout);
-                this.renderWorkoutList(workout);
+                this.#renderMarket(workout);
+                this.#renderWorkoutList(workout);
             });
         }
     }
